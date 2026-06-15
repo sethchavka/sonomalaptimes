@@ -121,6 +121,7 @@ h1 em{font-style:normal;color:var(--muted);font-weight:600;display:block}
 .tagpill.gtx{background:rgba(148,161,178,.14);color:var(--muted);border-color:var(--line2)}
 .tagpill.grip{background:rgba(79,200,138,.14);color:var(--gray);border-color:rgba(79,200,138,.4)}
 .tagpill.tire{background:rgba(230,184,79,.12);color:var(--accent);border-color:rgba(230,184,79,.35)}
+.tagpill.track{background:rgba(66,197,212,.12);color:var(--hawk);border-color:rgba(66,197,212,.35)}
 .session-meta{display:flex;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
 .sm-item{display:flex;flex-direction:column}
 .sm-k{font-family:var(--mono);font-size:8.5px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
@@ -300,6 +301,23 @@ const SESSIONS = [
       {no:8, desc:'Run 07 + front frame heights dropped to 4"', avg1:76.30, avg2:76.61, laps:5, times:[76.52,77.54,76.20,76.17], comment:"Really good — weight transfer is better, front of the car felt more in command."},
       {no:9, desc:'Run 08 + TB up 0.5in both sides', avg1:76.65, avg2:77.19, laps:5, times:[78.81,76.59,76.55,76.81], comment:"Got me tighter — worse on the low speed, tied up on the high speed too."}
     ]
+  },
+  {
+    id:'20260615_NOS_SON_JGR54_DS', driver:'Taylor Gray', car:'JGR54',
+    date:'Jun 15', dateSort:20260615, track:'Sonoma_v2401', sim:'GTX', tire:'25Son1_o06', totalLaps:80,
+    runs:[
+      {no:1, desc:'26SON1 54b AB1', avg1:77.18, avg2:77.32, laps:13, times:[78.68,78.15,78.20,77.65,77.63,77.20,78.18,77.75,77.84,77.03,77.41,77.31], comment:"1300 brake gain, SD surface. Balance is pretty good. Hard to go fast — can't run the car out over the rumble strips on exit (they pull the car hard into them). [HD Off]"},
+      {no:2, desc:'Run 1 with RSTA to T hole', avg1:77.31, avg2:77.64, laps:5, times:[77.47,77.23,78.61,77.24], comment:"Was okay. Lost a little rear lateral grip there. [HD Off]"},
+      {no:3, desc:'Rerun Run 1', avg1:null, avg2:null, laps:0, times:[], comment:"Tightened the front a bit, added some rear lateral grip. Car was a little tight everywhere, lacked a bit of forward drive. [Model crash — no data; curbs caused the wreck. HD Off]"},
+      {no:4, desc:'Rerun Run 1 with HD surface', avg1:76.53, avg2:76.62, laps:13, times:[77.68,77.11,76.87,76.69,76.48,77.21,76.82,77.11,77.31,76.91,76.71,76.42], comment:"HD surface fixed the curb issue. Lefts a little snug but rights are too tight — rights tighter than lefts."},
+      {no:5, desc:'Run 4 with LSTA to M hole', avg1:76.60, avg2:76.64, laps:8, times:[76.90,76.57,76.74,76.71,76.65,76.71,76.58], comment:"Balance alright. Snug in medium-to-high speed corners, good in low speed. No more left-to-right disconnect."},
+      {no:6, desc:'Rerun Run 4', avg1:76.77, avg2:76.92, laps:6, times:[76.76,77.15,76.70,77.16,76.84], comment:"Tight everywhere. More tight in the rights than the lefts."},
+      {no:7, desc:'Run 4 with 1% wedge add', avg1:76.67, avg2:76.87, laps:5, times:[77.46,76.69,76.67,76.66], comment:"Still too tight. Tighter through the lefts than last run. Didn't free it up to the right."},
+      {no:8, desc:'Rerun Run 5', avg1:76.51, avg2:76.57, laps:10, times:[77.09,77.57,76.54,77.13,76.73,76.60,76.77,76.56,76.42], comment:"Better. A little snug but also lacking some rear lateral grip. Freer both directions. Tightest through 1/2, 4a, 8, 8a, 10. Slight lack of rear lateral out of slow-speed corners."},
+      {no:9, desc:'Run 5 with a 2470 bar', avg1:76.53, avg2:76.62, laps:9, times:[77.08,76.62,76.79,76.74,76.39,77.08,76.97,76.57], comment:"Front grip better. Lacking a little rear lateral grip and forward drive. Not much change from previous. Still too tight through 10."},
+      {no:10, desc:'Run 1 with track bar up 1/2" both sides', avg1:76.67, avg2:76.75, laps:6, times:[76.80,76.82,76.64,76.93,76.58], comment:"Felt pretty good — wouldn't ask for anything different. Still too tight through 10 and 4a. Could use more drive out of slow-speed corners."},
+      {no:11, desc:'Rerun Run 5', avg1:76.34, avg2:76.47, laps:5, times:[76.87,76.38,76.38,76.26], comment:"Felt really good. Fixed turn 10. Forward drive really good, 4a pretty solid."}
+    ]
   }
 ];
 
@@ -381,9 +399,19 @@ function renderSummary(){
 
 /* =================== RENDER: HEADER STATS =================== */
 function renderHeaderStats(){
+  document.getElementById('stat-sessions').textContent=SESSIONS.length;
   document.getElementById('stat-laps').textContent=TOTAL_VALID;
   document.getElementById('stat-best').textContent=cleanBest.time.toFixed(2);
   document.getElementById('stat-best').style.color=driverColor(cleanBest.driver);
+  // dynamic meta bar
+  const tracks=[...new Set(SESSIONS.map(s=>s.track.replace('Sonoma_','')))];
+  const sims=[...new Set(SESSIONS.map(s=>s.sim))];
+  const tires=[...new Set(SESSIONS.map(s=>s.tire).filter(Boolean))];
+  const ordered=[...SESSIONS].sort((a,b)=>a.dateSort-b.dateSort);
+  document.getElementById('meta-track').textContent='Sonoma '+tracks.join(' · ');
+  document.getElementById('meta-sim').textContent=sims.join(' · ');
+  document.getElementById('meta-tire').textContent=tires.join(' · ');
+  document.getElementById('meta-dates').textContent=`${ordered[0].date} – ${ordered[ordered.length-1].date}, 2026`;
 }
 
 /* =================== CHART 1: BEST LAP PER SESSION =================== */
@@ -392,7 +420,7 @@ function buildBestChart(){
   const ctx=document.getElementById('bestChart');
   const tick=cssVar('--dim'), grid=cssVar('--line'), panel=cssVar('--panel');
   const ordered=[...SESSIONS].sort((a,b)=>a.dateSort-b.dateSort);
-  const labels=ordered.map(s=>`${s.date}`);
+  const labels=ordered.map(s=>[s.date, s.track.replace('Sonoma_','')]);
 
   // one dataset per driver, points only where they ran
   const datasets=DRIVERS_PRESENT.map(d=>{
@@ -534,12 +562,20 @@ function renderCounters(){
 }
 
 /* =================== RENDER: FILTERS =================== */
-let activeDriver='all', activeSim='all', activeTire='all';
+let activeDriver='all', activeSim='all', activeTire='all', activeTrack='all';
 function renderFilters(){
   const sims=[...new Set(SESSIONS.map(s=>s.sim))];
   const tires=[...new Set(SESSIONS.map(s=>s.tire).filter(Boolean))];
+  const tracks=[...new Set(SESSIONS.map(s=>s.track))].sort();
   const f=document.getElementById('filters');
-  let html=`<div class="filter-group"><span class="filter-glabel">Driver</span>`;
+  let html='';
+  if(tracks.length>1){
+    html+=`<div class="filter-group"><span class="filter-glabel">Track</span>`;
+    html+=`<button class="filter-btn active" data-type="track" data-val="all">All</button>`;
+    tracks.forEach(t=>{ const short=t.replace('Sonoma_',''); html+=`<button class="filter-btn" data-type="track" data-val="${t}">${short}</button>`; });
+    html+=`</div><div class="filter-sep"></div>`;
+  }
+  html+=`<div class="filter-group"><span class="filter-glabel">Driver</span>`;
   html+=`<button class="filter-btn active" data-type="driver" data-val="all">All</button>`;
   DRIVERS_PRESENT.forEach(d=>{ html+=`<button class="filter-btn" data-type="driver" data-val="${d}">${d.split(' ').pop()}</button>`; });
   html+=`</div><div class="filter-sep"></div><div class="filter-group"><span class="filter-glabel">Sim</span>`;
@@ -560,6 +596,7 @@ function renderFilters(){
       btn.classList.add('active');
       if(type==='driver') activeDriver=btn.dataset.val;
       else if(type==='sim') activeSim=btn.dataset.val;
+      else if(type==='track') activeTrack=btn.dataset.val;
       else activeTire=btn.dataset.val;
       renderSessions();
     });
@@ -573,7 +610,8 @@ function renderSessions(){
   const cards=ordered.filter(s=>
     (activeDriver==='all'||s.driver===activeDriver) &&
     (activeSim==='all'||s.sim===activeSim) &&
-    (activeTire==='all'||s.tire===activeTire)
+    (activeTire==='all'||s.tire===activeTire) &&
+    (activeTrack==='all'||s.track===activeTrack)
   ).map(s=>{
     const sBest=sessionCleanBest(s);
     const grip=isGrip(s.driver);
@@ -588,7 +626,7 @@ function renderSessions(){
         <div class="run-body">
           <div class="run-desc">${r.desc}</div>
         </div>
-        <div class="run-avg">${r.avg1.toFixed(2)}<br><span style="color:var(--dim)">avg1</span></div>
+        <div class="run-avg">${r.avg1!=null?r.avg1.toFixed(2):'—'}<br><span style="color:var(--dim)">avg1</span></div>
         <div class="run-laps">${runValidLapCount(r)}L</div>
         <div class="run-best ${bestCls}">${bestVal}</div>
       </div>`;
@@ -605,6 +643,7 @@ function renderSessions(){
         <div class="session-driver">${s.driver}</div>
         <div class="session-date">
           <span>${s.date}, 2026 · ${s.car}</span>
+          <span class="tagpill track">${s.track.replace('Sonoma_','')}</span>
           <span class="tagpill ${s.sim.toLowerCase()}">${s.sim}</span>
           ${s.tire?`<span class="tagpill tire">${s.tire}</span>`:''}
           ${grip?'<span class="tagpill grip">+5% grip</span>':''}
