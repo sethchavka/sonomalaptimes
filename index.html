@@ -149,7 +149,7 @@ h1 em{font-style:normal;color:var(--muted);font-weight:600;display:block}
 .lockgate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(900px 500px at 50% -10%,rgba(230,184,79,.07),transparent 60%),var(--bg)}
 .lockbox{width:min(360px,90vw);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:34px 30px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)}
-.lockbrand{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--accent);margin-bottom:10px;text-transform:uppercase}
+.lockbrand{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--accent);margin-bottom:10px;text-transform:uppercase;line-height:1.6}
 .locktitle{font-family:var(--cond);font-size:30px;font-weight:900;text-transform:uppercase;margin:0 0 4px}
 .locksub{font-family:var(--mono);font-size:10.5px;letter-spacing:1px;color:var(--muted);margin:0 0 22px;text-transform:uppercase}
 .lockinput{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:8px;color:var(--txt);font-family:var(--mono);font-size:15px;padding:13px 14px;letter-spacing:1px;outline:none;transition:.15s}
@@ -164,13 +164,20 @@ h1 em{font-style:normal;color:var(--muted);font-weight:600;display:block}
 @media(max-width:720px){
   h1{font-size:42px}
   .header{padding:24px 18px 20px}
+  .eyebrow{padding-right:44px}            /* clear the theme toggle button */
+  .themebtn{top:20px;right:18px}
   .content{padding:22px 18px 0}
   .summary-grid{grid-template-columns:repeat(2,1fr)}
   .header-stats{margin-top:16px}
-  .hstat{padding:4px 16px}
+  .hstat{padding:4px 14px}
+  .hstat-val{font-size:34px}
   .chart-wrap{height:260px}
+  .chart-title{font-size:19px}
   .chart-sub{max-width:100%;text-align:left}
   .sessions-grid{grid-template-columns:1fr}
+  .filters{gap:6px}
+  .filter-sep{display:none}               /* dividers float when groups wrap; hide on mobile */
+  .filter-group{width:100%}               /* each filter group on its own row */
 }
 </style>
 </head>
@@ -178,7 +185,7 @@ h1 em{font-style:normal;color:var(--muted);font-weight:600;display:block}
 
 <div class="lockgate" id="lockgate">
   <div class="lockbox">
-    <div class="lockbrand">Toyota Racing Development</div>
+    <div class="lockbrand">Toyota Racing Development · Joe Gibbs Racing</div>
     <div class="locktitle">Sonoma</div>
     <div class="locksub">Simulator Lap Analysis</div>
     <input type="password" class="lockinput" id="lockinput" placeholder="ENTER PASSWORD" autocomplete="off">
@@ -193,19 +200,19 @@ h1 em{font-style:normal;color:var(--muted);font-weight:600;display:block}
     <button class="themebtn" id="themebtn" title="Toggle light/dark">◑</button>
     <div class="header-top">
       <div>
-        <div class="eyebrow">Toyota Racing Development · Simulator Analysis</div>
+        <div class="eyebrow">Toyota Racing Development · Joe Gibbs Racing</div>
         <h1>Sonoma<em>Lap Time Analysis</em></h1>
         <div class="header-meta">
-          <div class="header-meta-item" id="meta-track">Sonoma_v2302</div>
-          <div class="header-meta-item" id="meta-sim">GT12</div>
+          <div class="header-meta-item" id="meta-track">Sonoma v2302 · v2401</div>
+          <div class="header-meta-item" id="meta-sim">GT12 · GTX</div>
           <div class="header-meta-item" id="meta-tire">25Son1_o06</div>
-          <div class="header-meta-item" id="meta-dates">Jun 2 – Jun 11, 2026</div>
+          <div class="header-meta-item" id="meta-dates">Jun 2 – Jun 15, 2026</div>
         </div>
       </div>
       <div class="header-stats">
-        <div class="hstat"><div class="hstat-val" id="stat-sessions">3</div><div class="hstat-label">Sessions</div></div>
+        <div class="hstat"><div class="hstat-val" id="stat-sessions">4</div><div class="hstat-label">Sessions</div></div>
         <div class="hstat"><div class="hstat-val" id="stat-laps">—</div><div class="hstat-label">Valid Laps</div></div>
-        <div class="hstat"><div class="hstat-val" style="color:var(--accent)" id="stat-best">76.86</div><div class="hstat-label">Best Lap · Clean</div></div>
+        <div class="hstat"><div class="hstat-val" style="color:var(--accent)" id="stat-best">76.17</div><div class="hstat-label">Best Lap · Clean</div></div>
       </div>
     </div>
   </div>
@@ -261,9 +268,10 @@ const DRIVER_META = {
 };
 const OUTLIER = 90; // laps at/above this are excluded — Sonoma clean pace ~77s, off-pace/race laps 115s+
 
-/* Sessions parsed from the three Sonoma_v2302 PDF reports.
+/* Sessions parsed from Sonoma PDF session reports (v2302 and v2401 track versions).
    Each run: no, desc, avg1 (avg of 1st 3 laps as reported), avg2, laps (count),
-   times[] (individual out laps as printed), comment. */
+   times[] (individual out laps as printed), comment.
+   Outlier laps >=OUTLIER (90s) are excluded from valid counts and bests. */
 const SESSIONS = [
   {
     id:'20260602_NOS_SON_JGR19_DS', driver:'Brent Crews', car:'JGR19',
@@ -479,7 +487,7 @@ function buildStripChart(){
       if(r.avg1>=AVG_OUTLIER) return;         // skip race-pace runs from qualifying-pace comparison
       const i=DRIVERS_PRESENT.indexOf(s.driver);
       const jitter=(Math.random()-0.5)*0.34;
-      points.push({x:i+jitter, y:r.avg1, _d:s.driver, _s:s.date, _r:r.no, _v001:false});
+      points.push({x:i+jitter, y:r.avg1, _d:s.driver, _s:s.date, _r:r.no});
       ranges[s.driver].vals.push(r.avg1);
     });
   });
@@ -636,8 +644,6 @@ function renderSessions(){
       `<div class="comment"><span class="comment-no">R${r.no}</span>${r.comment}</div>`
     ).join('');
 
-    const hasOutlierRun = s.runs.some(r=>r.times.some(t=>t>=OUTLIER));
-
     return `<div class="session-card" style="--cc:${driverColor(s.driver)}">
       <div class="session-head">
         <div class="session-driver">${s.driver}</div>
@@ -655,7 +661,6 @@ function renderSessions(){
         <div class="sm-item"><div class="sm-k">Best Clean</div><div class="sm-v" style="color:${grip?driverColor(s.driver):'var(--accent)'}">${sBest!=null?sBest.toFixed(2):'—'}</div></div>
       </div>
       ${grip?`<div class="note-banner grip">▲ All ${s.driver.split(' ').pop()} sessions carry +5% artificial grip — excluded from headline comparisons.</div>`:''}
-      ${hasOutlierRun&&!grip?`<div class="note-banner">▲ Contains race-pace / off-pace laps (&gt;90s) excluded from valid counts &amp; bests.</div>`:''}
       <div class="runs">${runsHtml}</div>
       ${comments?`<div class="comments-block">${comments}</div>`:''}
     </div>`;
