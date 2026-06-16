@@ -149,7 +149,7 @@ h1 em{font-style:normal;color:var(--muted);font-weight:600;display:block}
 .lockgate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(900px 500px at 50% -10%,rgba(230,184,79,.07),transparent 60%),var(--bg)}
 .lockbox{width:min(360px,90vw);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:34px 30px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)}
-.lockbrand{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--accent);margin-bottom:10px;text-transform:uppercase;line-height:1.6}
+.lockbrand{font-family:var(--mono);font-size:10.5px;letter-spacing:2.5px;color:var(--accent);margin-bottom:12px;text-transform:uppercase;line-height:1.8}
 .locktitle{font-family:var(--cond);font-size:30px;font-weight:900;text-transform:uppercase;margin:0 0 4px}
 .locksub{font-family:var(--mono);font-size:10.5px;letter-spacing:1px;color:var(--muted);margin:0 0 22px;text-transform:uppercase}
 .lockinput{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:8px;color:var(--txt);font-family:var(--mono);font-size:15px;padding:13px 14px;letter-spacing:1px;outline:none;transition:.15s}
@@ -185,7 +185,7 @@ h1 em{font-style:normal;color:var(--muted);font-weight:600;display:block}
 
 <div class="lockgate" id="lockgate">
   <div class="lockbox">
-    <div class="lockbrand">Toyota Racing Development · Joe Gibbs Racing</div>
+    <div class="lockbrand">Toyota Racing Development<br>Joe Gibbs Racing</div>
     <div class="locktitle">Sonoma</div>
     <div class="locksub">Simulator Lap Analysis</div>
     <input type="password" class="lockinput" id="lockinput" placeholder="ENTER PASSWORD" autocomplete="off">
@@ -325,6 +325,18 @@ const SESSIONS = [
       {no:9, desc:'Run 5 with a 2470 bar', avg1:76.53, avg2:76.62, laps:9, times:[77.08,76.62,76.79,76.74,76.39,77.08,76.97,76.57], comment:"Front grip better. Lacking a little rear lateral grip and forward drive. Not much change from previous. Still too tight through 10."},
       {no:10, desc:'Run 1 with track bar up 1/2" both sides', avg1:76.67, avg2:76.75, laps:6, times:[76.80,76.82,76.64,76.93,76.58], comment:"Felt pretty good — wouldn't ask for anything different. Still too tight through 10 and 4a. Could use more drive out of slow-speed corners."},
       {no:11, desc:'Rerun Run 5', avg1:76.34, avg2:76.47, laps:5, times:[76.87,76.38,76.38,76.26], comment:"Felt really good. Fixed turn 10. Forward drive really good, 4a pretty solid."}
+    ]
+  },
+  {
+    id:'20260615_NOS_SON_JGR19_DS', driver:'Brent Crews', car:'JGR19',
+    date:'Jun 15', dateSort:20260615.5, track:'Sonoma_v2401_AltSF', sim:'GTX', tire:'25Son1_o06', totalLaps:25,
+    runs:[
+      {no:1, desc:'AB1v3 on the cold tire', avg1:77.14, avg2:77.27, laps:9, times:[78.35,77.54,77.39,77.58,80.68,76.92,77.31,77.18], comment:"Too tight in both directions. Snaps free off on exit — so much wheel in it when it grips up."},
+      {no:2, desc:'Rerun R2 with track bar +1/2" both sides', avg1:77.71, avg2:77.71, laps:4, times:[79.08,77.03,77.03], comment:"Couldn't get it turned as well in T12 — have to wait on it in the faster high speed. Helped overall vs last setup; lost a tiny bit of drive but a positive change."},
+      {no:3, desc:'Rerun R2 + -0.2% NW, -0.5% wedge, 298@55 front shocks', avg1:84.70, avg2:84.70, laps:3, times:[92.64,76.75], comment:"Still doesn't drive quite right — feels disconnected in the rear. Freed up overall balance (a gain)."},
+      {no:4, desc:'Rerun R3 with track bar -1/4" both sides', avg1:77.37, avg2:77.50, laps:5, times:[77.73,77.59,77.89,76.79], comment:"Feels really good. Better, but still not as good as it was in GT12. Still good though."},
+      {no:5, desc:'Rerun R4 with track bar heights 5 3/4" | 6 1/4"', avg1:77.26, avg2:77.26, laps:4, times:[77.75,76.87,77.17], comment:"Really tight on entry, then it hikes up the inside tire so I snap free off."},
+      {no:6, desc:'Rerun R5 with FARB in', avg1:null, avg2:null, laps:0, times:[], comment:"Better — a bit on the freer side, but the platform and point were way better. [No lap data recorded]"}
     ]
   }
 ];
@@ -478,7 +490,7 @@ function buildStripChart(){
 
   // build one scatter point per run: x = driver index, y = avg1
   // exclude pure-outlier runs and race-pace runs whose avg1 is far off clean qualifying pace
-  const AVG_OUTLIER = 100; // clean pace ~77s; race/TFG runs (avg ~135) are excluded from this comparison
+  const AVG_OUTLIER = 80; // clean qualifying pace ~76-78s; excludes race-pace and runs whose avg1 is inflated by an excluded out-lap
   const points=[]; const ranges={};
   DRIVERS_PRESENT.forEach((d,i)=>{ ranges[d]={vals:[],i}; });
   SESSIONS.forEach(s=>{
